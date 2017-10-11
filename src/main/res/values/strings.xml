@@ -1,0 +1,10 @@
+<resources>
+    <string name="app_name">Demo Snips Android</string>
+    <string name="record">Start</string>
+    <string name="NeedRecordAudioPermission">"This sample needs RECORD_AUDIO permission"</string>
+    <string name="hotword">Hotword</string>
+    <string name="start_dialog_session">Start a dialogue session</string>
+    <string name="loading">Loading…</string>
+    <string name="stop">Stop</string>
+    <string name="start">Start</string>
+</resources>
