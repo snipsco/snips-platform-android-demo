@@ -108,7 +108,7 @@ public class MainActivity extends AppCompatActivity {
             megazord = Megazord.builder(assistantDir)
                                .enableDialogue(true) // defaults to true
                                .enableHotword(true) // defaults to true
-                               .enableHtmlLogs(true) // defaults to false
+                               .enableSnipsWatchHtml(true) // defaults to false
                                .withHotwordSensitivity(0.5f) // defaults to 0.5
                                .enableStreaming(true) // defaults to false
                                .build();
@@ -142,7 +142,7 @@ public class MainActivity extends AppCompatActivity {
 
             // This api is really for debugging purposes and you should not have features depending on its output
             // If you need us to expose more APIs please do ask !
-            megazord.setOnLogListener(new Function1<String, Unit>() {
+            megazord.setOnSnipsWatchListener(new Function1<String, Unit>() {
                 public Unit invoke(final String s) {
                     runOnUiThread(new Runnable() {
                         public void run() {
