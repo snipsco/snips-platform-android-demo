@@ -3,3 +3,7 @@ android:
   components:
     - build-tools-26.0.2
     - android-26
+  licences:
+    - 'android-sdk-preview-license-.+'
+    - 'android-sdk-license-.+'
+    - 'google-gdk-license-.+'
