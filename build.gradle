@@ -62,7 +62,7 @@ dependencies {
     implementation 'com.android.support.constraint:constraint-layout:1.0.2'
 
     implementation 'net.java.dev.jna:jna:4.5.0@aar'
-    implementation('ai.snips:snips-platform-android:0.3.0@aar') {
+    implementation('ai.snips:snips-platform-android:0.4.0@aar') {
         transitive = true
     }
 

@@ -21,6 +21,9 @@ import android.widget.ScrollView;
 import java.io.File;
 
 import ai.snips.hermes.IntentMessage;
+import ai.snips.hermes.SessionEndedMessage;
+import ai.snips.hermes.SessionQueuedMessage;
+import ai.snips.hermes.SessionStartedMessage;
 import ai.snips.megazord.Megazord;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function0;
@@ -77,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
                                 @Override
                                 public void onClick(View view) {
                                     // programmatically start a dialogue session
-                                    megazord.startDialogue();
+                                    megazord.startSession("Hello", null, false, null);
                                 }
                             });
                             scrollView.setVisibility(View.VISIBLE);
@@ -137,6 +140,30 @@ public class MainActivity extends AppCompatActivity {
                 public Unit invoke(Boolean isListening) {
                     Log.d(TAG, "asr listening state: " + isListening);
                     // Do you magic here :D
+                    return null;
+                }
+            });
+
+            megazord.setOnSessionStartedListener(new Function1<SessionStartedMessage, Unit>() {
+                @Override
+                public Unit invoke(SessionStartedMessage sessionStartedMessage) {
+                    Log.d(TAG, "dialogue session started: " + sessionStartedMessage);
+                    return null;
+                }
+            });
+
+            megazord.setOnSessionQueuedListener(new Function1<SessionQueuedMessage, Unit>() {
+                @Override
+                public Unit invoke(SessionQueuedMessage sessionQueuedMessage) {
+                    Log.d(TAG, "dialogue session queued: " + sessionQueuedMessage);
+                    return null;
+                }
+            });
+
+            megazord.setOnSessionEndedListener(new Function1<SessionEndedMessage, Unit>() {
+                @Override
+                public Unit invoke(SessionEndedMessage sessionEndedMessage) {
+                    Log.d(TAG, "dialogue session ended: " + sessionEndedMessage);
                     return null;
                 }
             });
