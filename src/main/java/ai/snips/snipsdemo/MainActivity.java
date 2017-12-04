@@ -80,7 +80,7 @@ public class MainActivity extends AppCompatActivity {
                                 @Override
                                 public void onClick(View view) {
                                     // programmatically start a dialogue session
-                                    megazord.startSession("Hello", null, false, null);
+                                    megazord.startSession(null, null, false, null);
                                 }
                             });
                             scrollView.setVisibility(View.VISIBLE);
@@ -131,6 +131,8 @@ public class MainActivity extends AppCompatActivity {
                 public Unit invoke(IntentMessage intentMessage) {
                     Log.d(TAG, "received an intent: " + intentMessage);
                     // Do your magic here :D
+
+                    megazord.endSession(intentMessage.getSessionId(), null);
                     return null;
                 }
             });
