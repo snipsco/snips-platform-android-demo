@@ -174,11 +174,13 @@ public class MainActivity extends AppCompatActivity {
             // If you need us to expose more APIs please do ask !
             megazord.setOnSnipsWatchListener(new Function1<String, Unit>() {
                 public Unit invoke(final String s) {
+                    final String s2 = s.replaceAll("unknownword", "*");
+
                     runOnUiThread(new Runnable() {
                         public void run() {
                             // We enabled html logs in the builder, hence the fromHtml. If you only log to the console,
                             // or don't want colors to be displayed, do not enable the option
-                            ((EditText) findViewById(R.id.text)).append(Html.fromHtml(s + "<br />"));
+                            ((EditText) findViewById(R.id.text)).append(Html.fromHtml(s2 + "<br />"));
                             findViewById(R.id.scrollView).post(new Runnable() {
                                 @Override
                                 public void run() {
