@@ -7,7 +7,6 @@ import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.os.Environment;
-import android.os.Handler;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
@@ -43,14 +42,12 @@ public class MainActivity extends AppCompatActivity {
 
     private AudioRecord recorder;
 
-    private Handler handler;
-
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+
         setContentView(R.layout.activity_main);
         ensurePermissions();
-        handler = new Handler();
 
         findViewById(R.id.start).setOnClickListener(new View.OnClickListener() {
             @Override
@@ -63,29 +60,32 @@ public class MainActivity extends AppCompatActivity {
                     final View scrollView = findViewById(R.id.scrollView);
                     scrollView.setVisibility(View.GONE);
 
+                    final View loadingPanel = findViewById(R.id.loadingPanel);
+                    loadingPanel.setVisibility(View.VISIBLE);
+
                     new Thread() {
                         public void run() {
                             startMegazordService();
-                        }
-                    }.start();
 
-                    // Leave a litle bit of time for the platform to come up. We will provide dedicated methods for
-                    // that in the future, for now, just wait 30s, this is VERY conservative if you're on a recent phone
-                    handler.postDelayed(new Runnable() {
-                        @Override
-                        public void run() {
-                            button.setEnabled(true);
-                            button.setText(R.string.start_dialog_session);
-                            button.setOnClickListener(new OnClickListener() {
+                            runOnUiThread(new Runnable() {
                                 @Override
-                                public void onClick(View view) {
-                                    // programmatically start a dialogue session
-                                    megazord.startSession(null, null, false, null);
+                                public void run() {
+                                    loadingPanel.setVisibility(View.GONE);
+
+                                    button.setEnabled(true);
+                                    button.setText(R.string.start_dialog_session);
+                                    button.setOnClickListener(new OnClickListener() {
+                                        @Override
+                                        public void onClick(View view) {
+                                            // programmatically start a dialogue session
+                                            megazord.startSession(null, null, false, null);
+                                        }
+                                    });
+                                    scrollView.setVisibility(View.VISIBLE);
                                 }
                             });
-                            scrollView.setVisibility(View.VISIBLE);
                         }
-                    }, 30000);
+                    }.start();
                 }
             }
         });
