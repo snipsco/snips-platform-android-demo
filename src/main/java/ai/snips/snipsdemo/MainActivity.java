@@ -18,12 +18,13 @@ import android.widget.EditText;
 import android.widget.ScrollView;
 
 import java.io.File;
+import java.util.ArrayList;
 
 import ai.snips.hermes.IntentMessage;
 import ai.snips.hermes.SessionEndedMessage;
 import ai.snips.hermes.SessionQueuedMessage;
 import ai.snips.hermes.SessionStartedMessage;
-import ai.snips.megazord.Megazord;
+import ai.snips.platform.SnipsPlatformClient;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function0;
 import kotlin.jvm.functions.Function1;
@@ -38,7 +39,7 @@ public class MainActivity extends AppCompatActivity {
     private static final int ENCODING = AudioFormat.ENCODING_PCM_16BIT;
 
     // Snips platform codename for android port is Megazord
-    private static Megazord megazord;
+    private SnipsPlatformClient client;
 
     private AudioRecord recorder;
 
@@ -63,29 +64,9 @@ public class MainActivity extends AppCompatActivity {
                     final View loadingPanel = findViewById(R.id.loadingPanel);
                     loadingPanel.setVisibility(View.VISIBLE);
 
-                    new Thread() {
-                        public void run() {
-                            startMegazordService();
+                    startMegazordService();
 
-                            runOnUiThread(new Runnable() {
-                                @Override
-                                public void run() {
-                                    loadingPanel.setVisibility(View.GONE);
 
-                                    button.setEnabled(true);
-                                    button.setText(R.string.start_dialog_session);
-                                    button.setOnClickListener(new OnClickListener() {
-                                        @Override
-                                        public void onClick(View view) {
-                                            // programmatically start a dialogue session
-                                            megazord.startSession(null, null, false, null);
-                                        }
-                                    });
-                                    scrollView.setVisibility(View.VISIBLE);
-                                }
-                            });
-                        }
-                    }.start();
                 }
             }
         });
@@ -104,20 +85,46 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private void startMegazordService() {
-        if (megazord == null) {
+        if (client == null) {
             // a dir where the assistant models was unziped. it should contain the folders asr dialogue hotword and nlu
-            File assistantDir = new File(Environment.getExternalStorageDirectory().toString(), "snips_android_assistant");
+            File assistantDir = new File(Environment.getExternalStorageDirectory()
+                                                    .toString(), "snips_android_assistant");
 
-            megazord = Megazord.builder(assistantDir)
-                               .enableDialogue(true) // defaults to true
-                               .enableHotword(true) // defaults to true
-                               .enableSnipsWatchHtml(true) // defaults to false
-                               .enableLogs(true) // defaults to false
-                               .withHotwordSensitivity(0.5f) // defaults to 0.5
-                               .enableStreaming(true) // defaults to false
-                               .build();
+            client = new SnipsPlatformClient.Builder(assistantDir)
+                    .enableDialogue(true) // defaults to true
+                    .enableHotword(true) // defaults to true
+                    .enableSnipsWatchHtml(true) // defaults to false
+                    .enableLogs(true) // defaults to false
+                    .withHotwordSensitivity(0.5f) // defaults to 0.5
+                    .enableStreaming(true) // defaults to false
+                    .build();
 
-            megazord.setOnHotwordDetectedListener(new Function0<Unit>() {
+            client.setOnPlatformReady(new Function0<Unit>() {
+                @Override
+                public Unit invoke() {
+                    runOnUiThread(new Runnable() {
+                        @Override
+                        public void run() {
+                            findViewById(R.id.loadingPanel).setVisibility(View.GONE);
+                            findViewById(R.id.scrollView).setVisibility(View.VISIBLE);
+
+                            final Button button = findViewById(R.id.start);
+                            button.setEnabled(true);
+                            button.setText(R.string.start_dialog_session);
+                            button.setOnClickListener(new OnClickListener() {
+                                @Override
+                                public void onClick(View view) {
+                                    // programmatically start a dialogue session
+                                    client.startSession(null, new ArrayList<String>(), false, null);
+                                }
+                            });
+                        }
+                    });
+                    return null;
+                }
+            });
+
+            client.setOnHotwordDetectedListener(new Function0<Unit>() {
                 @Override
                 public Unit invoke() {
                     Log.d(TAG, "an hotword was detected !");
@@ -126,18 +133,18 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
 
-            megazord.setOnIntentDetectedListener(new Function1<IntentMessage, Unit>() {
+            client.setOnIntentDetectedListener(new Function1<IntentMessage, Unit>() {
                 @Override
                 public Unit invoke(IntentMessage intentMessage) {
                     Log.d(TAG, "received an intent: " + intentMessage);
                     // Do your magic here :D
 
-                    megazord.endSession(intentMessage.getSessionId(), null);
+                    client.endSession(intentMessage.getSessionId(), null);
                     return null;
                 }
             });
 
-            megazord.setOnListeningStateChangedListener(new Function1<Boolean, Unit>() {
+            client.setOnListeningStateChangedListener(new Function1<Boolean, Unit>() {
                 @Override
                 public Unit invoke(Boolean isListening) {
                     Log.d(TAG, "asr listening state: " + isListening);
@@ -146,7 +153,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
 
-            megazord.setOnSessionStartedListener(new Function1<SessionStartedMessage, Unit>() {
+            client.setOnSessionStartedListener(new Function1<SessionStartedMessage, Unit>() {
                 @Override
                 public Unit invoke(SessionStartedMessage sessionStartedMessage) {
                     Log.d(TAG, "dialogue session started: " + sessionStartedMessage);
@@ -154,7 +161,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
 
-            megazord.setOnSessionQueuedListener(new Function1<SessionQueuedMessage, Unit>() {
+            client.setOnSessionQueuedListener(new Function1<SessionQueuedMessage, Unit>() {
                 @Override
                 public Unit invoke(SessionQueuedMessage sessionQueuedMessage) {
                     Log.d(TAG, "dialogue session queued: " + sessionQueuedMessage);
@@ -162,7 +169,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
 
-            megazord.setOnSessionEndedListener(new Function1<SessionEndedMessage, Unit>() {
+            client.setOnSessionEndedListener(new Function1<SessionEndedMessage, Unit>() {
                 @Override
                 public Unit invoke(SessionEndedMessage sessionEndedMessage) {
                     Log.d(TAG, "dialogue session ended: " + sessionEndedMessage);
@@ -172,7 +179,7 @@ public class MainActivity extends AppCompatActivity {
 
             // This api is really for debugging purposes and you should not have features depending on its output
             // If you need us to expose more APIs please do ask !
-            megazord.setOnSnipsWatchListener(new Function1<String, Unit>() {
+            client.setOnSnipsWatchListener(new Function1<String, Unit>() {
                 public Unit invoke(final String s) {
                     runOnUiThread(new Runnable() {
                         public void run() {
@@ -199,7 +206,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             }.start();
 
-            megazord.start(); // no way to stop it yet, coming soon
+            client.connect(this.getApplicationContext()); // no way to stop it yet, coming soon
         }
     }
 
@@ -214,8 +221,8 @@ public class MainActivity extends AppCompatActivity {
         while (true) {
             short[] buffer = new short[minBufferSizeInBytes / 2];
             recorder.read(buffer, 0, buffer.length);
-            if (megazord != null) {
-                megazord.sendAudioBuffer(buffer);
+            if (client != null) {
+                client.sendAudioBuffer(buffer);
             }
         }
     }
