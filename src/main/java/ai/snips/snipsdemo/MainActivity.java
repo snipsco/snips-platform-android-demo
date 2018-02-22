@@ -38,7 +38,6 @@ public class MainActivity extends AppCompatActivity {
     private static final int CHANNEL = AudioFormat.CHANNEL_IN_MONO;
     private static final int ENCODING = AudioFormat.ENCODING_PCM_16BIT;
 
-    // Snips platform codename for android port is Megazord
     private SnipsPlatformClient client;
 
     private AudioRecord recorder;
@@ -46,11 +45,10 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         setContentView(R.layout.activity_main);
         ensurePermissions();
 
-        findViewById(R.id.start).setOnClickListener(new View.OnClickListener() {
+        findViewById(R.id.start).setOnClickListener(new OnClickListener() {
             @Override
             public void onClick(View view) {
                 if (ensurePermissions()) {
@@ -65,11 +63,17 @@ public class MainActivity extends AppCompatActivity {
                     loadingPanel.setVisibility(View.VISIBLE);
 
                     startMegazordService();
-
-
                 }
             }
         });
+    }
+
+    @Override
+    protected void onDestroy() {
+        if(client != null) {
+            client.disconnect();
+        }
+        super.onDestroy();
     }
 
     private boolean ensurePermissions() {
@@ -139,7 +143,7 @@ public class MainActivity extends AppCompatActivity {
                     Log.d(TAG, "received an intent: " + intentMessage);
                     // Do your magic here :D
 
-                    client.endSession(intentMessage.getSessionId(), null);
+                    client.endSession(intentMessage.getSessionId(), "yes sir I'll do that");
                     return null;
                 }
             });
@@ -200,30 +204,58 @@ public class MainActivity extends AppCompatActivity {
 
             // We enabled steaming in the builder, so we need to provide the platform an audio stream. If you don't want
             // to manage the audio stream do no enable the option, and the snips platform will grab the mic by itself
-            new Thread() {
-                public void run() {
-                    runStreaming();
-                }
-            }.start();
+            startStreaming();
 
-            client.connect(this.getApplicationContext()); // no way to stop it yet, coming soon
+            client.connect(this.getApplicationContext());
         }
     }
 
+    private volatile boolean continueStreaming = true;
+
+    private void startStreaming() {
+        continueStreaming = true;
+        new Thread() {
+            public void run() {
+                runStreaming();
+            }
+        }.start();
+    }
+
     private void runStreaming() {
+        Log.d(TAG, "starting audio streaming");
         final int minBufferSizeInBytes = AudioRecord.getMinBufferSize(FREQUENCY, CHANNEL, ENCODING);
         Log.d(TAG, "minBufferSizeInBytes: " + minBufferSizeInBytes);
 
         recorder = new AudioRecord(MediaRecorder.AudioSource.MIC, FREQUENCY, CHANNEL, ENCODING, minBufferSizeInBytes);
         recorder.startRecording();
 
-        // In a non demo app, you want to have a way to stop this :)
-        while (true) {
+        while (continueStreaming) {
             short[] buffer = new short[minBufferSizeInBytes / 2];
             recorder.read(buffer, 0, buffer.length);
             if (client != null) {
                 client.sendAudioBuffer(buffer);
             }
         }
+        recorder.stop();
+        Log.d(TAG, "audio streaming stopped");
+    }
+
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        if(client != null) {
+            startStreaming();
+            client.resume();
+        }
+    }
+
+    @Override
+    protected void onPause() {
+        continueStreaming = false;
+        if (client != null) {
+            client.pause();
+        }
+        super.onPause();
     }
 }
