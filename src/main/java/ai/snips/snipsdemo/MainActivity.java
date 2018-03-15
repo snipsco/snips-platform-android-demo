@@ -19,6 +19,9 @@ import android.widget.ScrollView;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.List;
+import java.util.concurrent.ThreadLocalRandom;
 
 import ai.snips.hermes.IntentMessage;
 import ai.snips.hermes.SessionEndedMessage;
@@ -143,7 +146,17 @@ public class MainActivity extends AppCompatActivity {
                     Log.d(TAG, "received an intent: " + intentMessage);
                     // Do your magic here :D
 
-                    client.endSession(intentMessage.getSessionId(), "yes sir I'll do that");
+                    // For now, lets just use a random sentence to tell the user we understood but don't know what to do
+
+                    List<String> answers = Arrays.asList(
+                            "This is only a demo app. I understood you but I don't know how to do that",
+                            "Can you teach me how to do that?",
+                            "Oops! This action has not be coded yet!",
+                            "Yes Master! ... hum, ..., er, ... imagine this as been done",
+                            "Let's pretend I've done it! OK?");
+
+
+                    client.endSession(intentMessage.getSessionId(), answers.get(Math.abs(ThreadLocalRandom.current().nextInt()) % answers.size()));
                     return null;
                 }
             });
