@@ -112,6 +112,7 @@ public class MainActivity extends AppCompatActivity {
                     runOnUiThread(new Runnable() {
                         @Override
                         public void run() {
+
                             findViewById(R.id.loadingPanel).setVisibility(View.GONE);
                             findViewById(R.id.scrollView).setVisibility(View.VISIBLE);
 
