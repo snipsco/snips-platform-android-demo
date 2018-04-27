@@ -7,6 +7,7 @@ import android.media.AudioRecord;
 import android.media.MediaRecorder;
 import android.os.Bundle;
 import android.os.Environment;
+import android.os.Process;
 import android.support.v4.app.ActivityCompat;
 import android.support.v7.app.AppCompatActivity;
 import android.text.Html;
@@ -230,6 +231,7 @@ public class MainActivity extends AppCompatActivity {
         continueStreaming = true;
         new Thread() {
             public void run() {
+                android.os.Process.setThreadPriority(Process.THREAD_PRIORITY_URGENT_AUDIO);
                 runStreaming();
             }
         }.start();
