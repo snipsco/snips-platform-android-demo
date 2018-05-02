@@ -1,7 +1,7 @@
 # Snips Android Demo
 A demo of the Snips Platform for Android
 
-This show basic integration of the snips platform in an android application. 
+This shows basic integration of the snips platform in an Android application. 
 
 ## Compiling 
 
