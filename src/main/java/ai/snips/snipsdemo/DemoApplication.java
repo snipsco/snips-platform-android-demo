@@ -38,5 +38,4 @@ public class DemoApplication extends Application {
             throw new RuntimeException(e);
         }
     }
-
 }

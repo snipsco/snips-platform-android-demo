@@ -29,6 +29,7 @@ import ai.snips.hermes.SessionEndedMessage;
 import ai.snips.hermes.SessionQueuedMessage;
 import ai.snips.hermes.SessionStartedMessage;
 import ai.snips.platform.SnipsPlatformClient;
+import ai.snips.platform.SnipsPlatformClient.SnipsPlatformError;
 import kotlin.Unit;
 import kotlin.jvm.functions.Function0;
 import kotlin.jvm.functions.Function1;
@@ -133,6 +134,20 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
 
+            client.setOnPlatformError(new Function1<SnipsPlatformError, Unit>() {
+
+                @Override
+                public Unit invoke(SnipsPlatformError snipsPlatformError) {
+                    findViewById(R.id.loadingPanel).setVisibility(View.VISIBLE);
+                    findViewById(R.id.scrollView).setVisibility(View.GONE);
+
+                    final Button button = findViewById(R.id.start);
+                    button.setEnabled(false);
+                    return null;
+                }
+            });
+
+
             client.setOnHotwordDetectedListener(new Function0<Unit>() {
                 @Override
                 public Unit invoke() {
@@ -158,7 +173,9 @@ public class MainActivity extends AppCompatActivity {
                             "Let's pretend I've done it! OK?");
 
 
-                    client.endSession(intentMessage.getSessionId(), answers.get(Math.abs(ThreadLocalRandom.current().nextInt()) % answers.size()));
+                    client.endSession(intentMessage.getSessionId(), answers.get(Math.abs(ThreadLocalRandom.current()
+                                                                                                          .nextInt()) % answers
+                            .size()));
                     return null;
                 }
             });
