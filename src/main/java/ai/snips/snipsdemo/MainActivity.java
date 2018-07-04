@@ -14,6 +14,7 @@ import android.text.Html;
 import android.util.Log;
 import android.view.View;
 import android.view.View.OnClickListener;
+import android.view.View.OnLongClickListener;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ScrollView;
@@ -21,9 +22,14 @@ import android.widget.ScrollView;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.concurrent.ThreadLocalRandom;
 
+import ai.snips.hermes.InjectionKind;
+import ai.snips.hermes.InjectionOperation;
+import ai.snips.hermes.InjectionRequestMessage;
 import ai.snips.hermes.IntentMessage;
 import ai.snips.hermes.SessionEndedMessage;
 import ai.snips.hermes.SessionQueuedMessage;
@@ -75,7 +81,7 @@ public class MainActivity extends AppCompatActivity {
 
     @Override
     protected void onDestroy() {
-        if(client != null) {
+        if (client != null) {
             client.disconnect();
         }
         super.onDestroy();
@@ -106,6 +112,7 @@ public class MainActivity extends AppCompatActivity {
                     .enableLogs(true) // defaults to false
                     .withHotwordSensitivity(0.5f) // defaults to 0.5
                     .enableStreaming(true) // defaults to false
+                    .enableInjection(true) // defaults to false
                     .build();
 
             client.setOnPlatformReady(new Function0<Unit>() {
@@ -126,6 +133,19 @@ public class MainActivity extends AppCompatActivity {
                                 public void onClick(View view) {
                                     // programmatically start a dialogue session
                                     client.startSession(null, new ArrayList<String>(), false, null);
+                                }
+                            });
+                            button.setOnLongClickListener(new OnLongClickListener() {
+                                @Override
+                                public boolean onLongClick(View v) {
+                                    // inject new values in the "house_room" entity
+                                    HashMap<String, List<String>> values = new HashMap<>();
+                                    values.put("house_room", Arrays.asList("bunker", "batcave"));
+                                    client.requestInjection(new InjectionRequestMessage(
+                                            Collections.singletonList(new InjectionOperation(InjectionKind.Add, values)),
+                                            new HashMap<String, List<String>>()));
+
+                                    return true;
                                 }
                             });
                         }
@@ -277,7 +297,7 @@ public class MainActivity extends AppCompatActivity {
     @Override
     protected void onResume() {
         super.onResume();
-        if(client != null) {
+        if (client != null) {
             startStreaming();
             client.resume();
         }
