@@ -17,6 +17,14 @@ should install the demo on a connected device
 
 Make sure you have an unzipped snips assitant in the folder `snips_android_assistant` at the root of the external storage on you Android. You can create and download assistants on the [Snips Console](https://console.snips.ai)
 
+You can copy the files with adb :
+
+```
+unzip your_assistant.zip
+adb push assistant/* /sdcard/snips_android_assistant/
+```
+
+
 Click the `start` button in the app to start the `snips-platform`.
 
 Current implementation is completly dumb and show the detected hotword/intents. A simple TTS is said when an intent is detected.
