@@ -3,6 +3,9 @@ A demo of the Snips Platform for Android
 
 This shows basic integration of the snips platform in an Android application. 
 
+## Known issue with 0.60.1
+- Injection is not working, a fix will be coming soon
+
 ## Compiling 
 
 A simple 

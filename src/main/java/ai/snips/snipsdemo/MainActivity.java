@@ -40,6 +40,11 @@ import kotlin.Unit;
 import kotlin.jvm.functions.Function0;
 import kotlin.jvm.functions.Function1;
 
+import static ai.snips.hermes.InjectionKind.Add;
+import static android.media.MediaRecorder.AudioSource.MIC;
+import static java.util.Collections.indexOfSubList;
+import static java.util.Collections.singletonList;
+
 public class MainActivity extends AppCompatActivity {
 
     private static final int AUDIO_ECHO_REQUEST = 0;
@@ -88,7 +93,8 @@ public class MainActivity extends AppCompatActivity {
     }
 
     private boolean ensurePermissions() {
-        int status = ActivityCompat.checkSelfPermission(MainActivity.this, Manifest.permission.RECORD_AUDIO);
+        int status = ActivityCompat.checkSelfPermission(MainActivity.this,
+                Manifest.permission.RECORD_AUDIO);
         if (status != PackageManager.PERMISSION_GRANTED) {
             ActivityCompat.requestPermissions(MainActivity.this, new String[]{
                     Manifest.permission.RECORD_AUDIO,
@@ -101,9 +107,11 @@ public class MainActivity extends AppCompatActivity {
 
     private void startMegazordService() {
         if (client == null) {
-            // a dir where the assistant models was unziped. it should contain the folders asr dialogue hotword and nlu
+            new File("/data/user/0/ai.snips.snipsdemo/files/_snips/injections/20181029T141610620688945").mkdirs();
+            // a dir where the assistant models was unziped. It should contain the folders
+            // custom_asr, custom_dialogue, custom_hotword and nlu_engine
             File assistantDir = new File(Environment.getExternalStorageDirectory()
-                                                    .toString(), "snips_android_assistant");
+                    .toString(), "snips_android_assistant");
 
             client = new SnipsPlatformClient.Builder(assistantDir)
                     .enableDialogue(true) // defaults to true
@@ -132,7 +140,8 @@ public class MainActivity extends AppCompatActivity {
                                 @Override
                                 public void onClick(View view) {
                                     // programmatically start a dialogue session
-                                    client.startSession(null, new ArrayList<String>(), false, null);
+                                    client.startSession(null, new ArrayList<String>(),
+                                            false, null);
                                 }
                             });
                             button.setOnLongClickListener(new OnLongClickListener() {
@@ -141,9 +150,11 @@ public class MainActivity extends AppCompatActivity {
                                     // inject new values in the "house_room" entity
                                     HashMap<String, List<String>> values = new HashMap<>();
                                     values.put("house_room", Arrays.asList("bunker", "batcave"));
+                                    InjectionOperation op = new InjectionOperation(Add, values);
                                     client.requestInjection(new InjectionRequestMessage(
-                                            Collections.singletonList(new InjectionOperation(InjectionKind.Add, values)),
-                                            new HashMap<String, List<String>>()));
+                                            singletonList(op),
+                                            Collections.<String, List<String>>emptyMap(),
+                                            null, null));
 
                                     return true;
                                 }
@@ -183,7 +194,8 @@ public class MainActivity extends AppCompatActivity {
                     Log.d(TAG, "received an intent: " + intentMessage);
                     // Do your magic here :D
 
-                    // For now, lets just use a random sentence to tell the user we understood but don't know what to do
+                    // For now, lets just use a random sentence to tell the user we understood but
+                    // don't know what to do
 
                     List<String> answers = Arrays.asList(
                             "This is only a demo app. I understood you but I don't know how to do that",
@@ -193,9 +205,8 @@ public class MainActivity extends AppCompatActivity {
                             "Let's pretend I've done it! OK?");
 
 
-                    client.endSession(intentMessage.getSessionId(), answers.get(Math.abs(ThreadLocalRandom.current()
-                                                                                                          .nextInt()) % answers
-                            .size()));
+                    int index = Math.abs(ThreadLocalRandom.current().nextInt()) % answers.size();
+                    client.endSession(intentMessage.getSessionId(), answers.get(index));
                     return null;
                 }
             });
@@ -233,14 +244,15 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
 
-            // This api is really for debugging purposes and you should not have features depending on its output
-            // If you need us to expose more APIs please do ask !
+            // This api is really for debugging purposes and you should not have features depending
+            // on its output. If you need us to expose more APIs please do ask !
             client.setOnSnipsWatchListener(new Function1<String, Unit>() {
                 public Unit invoke(final String s) {
                     runOnUiThread(new Runnable() {
                         public void run() {
-                            // We enabled html logs in the builder, hence the fromHtml. If you only log to the console,
-                            // or don't want colors to be displayed, do not enable the option
+                            // We enabled html logs in the builder, hence the fromHtml. If you only
+                            // log to the console, or don't want colors to be displayed, do not
+                            // enable the option
                             ((EditText) findViewById(R.id.text)).append(Html.fromHtml(s + "<br />"));
                             findViewById(R.id.scrollView).post(new Runnable() {
                                 @Override
@@ -254,8 +266,9 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
 
-            // We enabled steaming in the builder, so we need to provide the platform an audio stream. If you don't want
-            // to manage the audio stream do no enable the option, and the snips platform will grab the mic by itself
+            // We enabled steaming in the builder, so we need to provide the platform an audio
+            // stream. If you don't want to manage the audio stream do no enable the option, and the
+            // snips platform will grab the mic by itself
             startStreaming();
 
             client.connect(this.getApplicationContext());
@@ -279,7 +292,7 @@ public class MainActivity extends AppCompatActivity {
         final int minBufferSizeInBytes = AudioRecord.getMinBufferSize(FREQUENCY, CHANNEL, ENCODING);
         Log.d(TAG, "minBufferSizeInBytes: " + minBufferSizeInBytes);
 
-        recorder = new AudioRecord(MediaRecorder.AudioSource.MIC, FREQUENCY, CHANNEL, ENCODING, minBufferSizeInBytes);
+        recorder = new AudioRecord(MIC, FREQUENCY, CHANNEL, ENCODING, minBufferSizeInBytes);
         recorder.startRecording();
 
         while (continueStreaming) {
