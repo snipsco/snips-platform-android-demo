@@ -58,7 +58,7 @@ dependencies {
     implementation 'com.android.support:appcompat-v7:27.1.1'
     implementation 'com.android.support.constraint:constraint-layout:1.1.2'
 
-    implementation('ai.snips:snips-platform-android:0.61.0-SNAPSHOT@aar') {
+    implementation('ai.snips:snips-platform-android:0.60.2@aar') {
         transitive = true
     }
 
