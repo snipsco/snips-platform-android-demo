@@ -107,7 +107,6 @@ public class MainActivity extends AppCompatActivity {
 
     private void startMegazordService() {
         if (client == null) {
-            new File("/data/user/0/ai.snips.snipsdemo/files/_snips/injections/20181029T141610620688945").mkdirs();
             // a dir where the assistant models was unziped. It should contain the folders
             // custom_asr, custom_dialogue, custom_hotword and nlu_engine
             File assistantDir = new File(Environment.getExternalStorageDirectory()
