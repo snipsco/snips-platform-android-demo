@@ -265,7 +265,7 @@ public class MainActivity extends AppCompatActivity {
                 }
             });
 
-            // We enabled steaming in the builder, so we need to provide the platform an audio
+            // We enabled streaming in the builder, so we need to provide the platform an audio
             // stream. If you don't want to manage the audio stream do no enable the option, and the
             // snips platform will grab the mic by itself
             startStreaming();
