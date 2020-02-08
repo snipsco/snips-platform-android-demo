@@ -15,7 +15,7 @@ should install the demo on a connected device
 
 ## Running
 
-Make sure you have an unzipped snips assitant in the folder `snips_android_assistant` at the root of the external storage on you Android. You can create and download assistants on the [Snips Console](https://console.snips.ai)
+Make sure you have an unzipped snips assistant in the folder `snips_android_assistant` at the root of the external storage on you Android. You can create and download assistants on the [Snips Console](https://console.snips.ai)
 
 You can copy the files with adb :
 
